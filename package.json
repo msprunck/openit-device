@@ -1,12 +1,12 @@
 {
-  "name": "application-name",
+  "name": "openit-device",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node app.js"
   },
   "dependencies": {
-    "faye": "*",
-    "pi-gpio": "*"
+    "pi-gpio": "0.0.8",
+    "pubnub": "3.7.18"
   }
 }

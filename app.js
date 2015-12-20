@@ -1,69 +1,42 @@
 /**
  * Start the nodejs server with the following command:
- * OPENIT_DEVICE_ID=<value> OPENIT_KEY=<value> node app.js
+ * SUBSCRIBE_KEY=<value> node app.js
  */
 
-var faye = require('faye');
 var util = require('util');
-var gpio = require("pi-gpio");
-
-/** URL of the OpenIt backend. */
-var URL = 'http://openit.appspot.fr/faye';
-
-/** The device ID. */
-var DEVICE_ID = process.env.OPENIT_DEVICE_ID || 'ID'; 
-
-/** The channel to listen. */
-var CHANNEL = '/control/' + DEVICE_ID;
-
-/** The device key. */
-var KEY = process.env.OPENIT_KEY || 'KEY';
+var gpio = require('pi-gpio');
 
 /****************************************
- ** Subscription to the OpenIt backend. *
+ ** Subscription to pubnub. *
  ****************************************/
- 
-var client = new faye.Client(URL, {
-    retry: 5,
-    timeout: 120
+
+var pubnub = require('pubnub')({
+    ssl: true,  // <- enable TLS Tunneling over TCP
+    subscribe_key: process.env.SUBSCRIBE_KEY || 'ID'
 });
-
-var clientAuth = {
-  outgoing: function(message, callback) {
-    // Again, leave non-subscribe messages alone
-    if (message.channel !== '/meta/subscribe')
-      return callback(message);
-
-    // Add ext field if it's not present
-    if (!message.ext) message.ext = {};
-
-    // Set the auth token
-    message.ext.authToken = KEY;
-
-    console.log('Subscription (KEY:' + KEY) + ')';
-
-    // Carry on and send the message to the server
-    callback(message);
-  }
-};
-
-client.addExtension(clientAuth);
 
 /***************
  ** Callbacks. *
  ***************/
- 
-var subscription = client.subscribe(CHANNEL, function(message) {
-  console.log("[NEW MESSAGE]: " + util.inspect(message));
-  open();
-});
 
-subscription.callback(function() {
-  console.log('[SUBSCRIBE SUCCEEDED]');
-});
-
-subscription.errback(function(error) {
-  console.log('[SUBSCRIBE FAILED]', error);
+pubnub.subscribe({
+    channel  : "door",
+    connect  : function() {
+        console.log("Ready To Receive Messages");
+    },
+    message: function(message){
+      open();
+    },
+    disconnect  : function() {
+        console.log("Disconnected");
+    },
+    reconnect: function(){
+      console.log("Reconnected")
+    },
+    error: function (error) {
+      // Handle error here
+      console.log(JSON.stringify(error));
+    }
 });
 
 /**

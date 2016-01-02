@@ -10,27 +10,29 @@
 ### END INIT INFO
 
 NODE=/opt/node/bin/node
-SERVER_JS_FILE=/home/pi/openit-device/app.js
-SUBSCRIBE_KEY=
-ENV="SUBSCRIBE_KEY=$SUBSCRIBE_KEY"
-USER=root
-OUT=/home/pi/openit-device/nodejs.log
+SOURCE_DIR=/home/pi/openit-device
+NODE_SCRIPT=app.js
+OUT=/home/pi/openit-device/openit.log
+PIDFILE=/var/run/openit.pid
 
+export SUBSCRIBE_KEY=
 echo SUBSCRIBE_KEY=$SUBSCRIBE_KEY
 
 case "$1" in
 
 start)
 	echo "starting node: $NODE $SERVER_JS_FILE"
-	sudo -u $USER $ENV $NODE $SERVER_JS_FILE > $OUT 2>$OUT &
+	exec forever --sourceDir=$SOURCE_DIR -a -l $OUT -p $PIDFILE --minUptime=5000 --spinSleepTime=2000 start $NODE_SCRIPT
 	;;
 
 stop)
-	killall $NODE
+	exec forever stop --sourceDir=$SOURCE_DIR NODE_SCRIPT
 	;;
 
 *)
-	echo "usage: $0 (start|stop)"
+	echo "Usage: /etc/init.d/openit.sh (start|stop)"
+  exit 1
+  ;;
 esac
 
 exit 0

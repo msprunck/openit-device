@@ -4,7 +4,7 @@
  */
 
 var util = require('util');
-var gpio = require('pi-gpio');
+var gpio = require('rpi-gpio');
 
 /****************************************
  ** Subscription to pubnub. *
@@ -43,8 +43,8 @@ pubnub.subscribe({
  * Open the door connected to the Raspberry Pi.
  */
 var open = function(){
-  gpio.open(11, "output", function(err) {  // Open pin 17 for output
-    gpio.write(11, 1, function() {         // Set pin 17 high (1)
+  gpio.setup(11, gpio.DIR_OUT, function(err) {  // Open pin 17 for output
+    gpio.write(11, true, function() {         // Set pin 17 high (1)
         setTimeout(function(){openRespond()}, 1000);
     });
   });
@@ -54,7 +54,7 @@ var open = function(){
  * To release the door switch after 1 second.
  */
 var openRespond = function() {
-  gpio.write(11, 0, function() {            // Set pin 17 high (1)
-        gpio.close(11);                     // Close pin 17
+  gpio.write(11, false, function() {            // Set pin 17 high (1)
+        gpio.destroy();                     // Close pin 17
   });
 }

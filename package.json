@@ -6,7 +6,7 @@
     "start": "node app.js"
   },
   "dependencies": {
-    "pi-gpio": "0.0.8",
+    "rpi-gpio": "0.7.0",
     "pubnub": "3.7.18"
   }
 }
